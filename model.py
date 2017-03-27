@@ -1,7 +1,5 @@
-import json
-import os
-
 import pytsk3
+import os
 
 
 class DiskImage:
@@ -39,26 +37,29 @@ class DiskImage:
                 return int(partition.get_offset())
         return -1
 
-    def write_file(self, address, filename):
+    def extract_file(self, address, filename):
         with open(self.file_path) as imageFile:
             image_handle = pytsk3.Img_Info(imageFile.name)
 
             ofs = self.get_offset_partition(address)
 
             if ofs > 0:
-                filesystemObject = pytsk3.FS_Info(image_handle, offset=ofs)
-                fileobject = filesystemObject.open("/" + filename)
+                file_system_object = pytsk3.FS_Info(image_handle, offset=ofs)
+                fileobject = file_system_object.open("/" + filename)
 
                 f = File(filename)
                 f.set_inode(fileobject.info.meta.addr)
                 f.set_name(fileobject.info.name.name)
                 f.set_file_creation(fileobject.info.meta.crtime)
 
-                outfile = open('DFIRWizard-output', 'w')
-                filedata = fileobject.read_random(0, fileobject.info.meta.size)
-                outfile.write(filedata)
+                file_data = fileobject.read_random(0, fileobject.info.meta.size)
+
+                f.set_file_data(file_data)
+
+                return f
             else:
                 print 'error getting offset'
+                return None
 
 
 class Partition:
@@ -95,6 +96,7 @@ class File:
         self.inode = None
         self.name = None
         self.file_creation = None
+        self.file_data = None
 
     def set_inode(self, inode):
         self.inode = inode
@@ -104,3 +106,22 @@ class File:
 
     def set_file_creation(self, file_creation):
         self.file_creation = file_creation
+
+    def set_file_data(self, file_data):
+        self.file_data = file_data
+
+    def get_inode(self):
+        return self.inode
+
+    def get_name(self):
+        return self.name
+
+    def get_file_creation(self):
+        return self.file_creation
+
+    def get_file_data(self):
+        return self.file_data
+
+    def write(self):
+        with open(self.file, 'w') as outfile:
+            outfile.write(self.file_data)
