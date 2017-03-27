@@ -36,11 +36,10 @@ def start():
     show_file_attributes(disk_image, file_extraction)
 
     # Part 3 Extracting a file from a live system
-
     # windowsOS
 
-    #mount drive with ftk imager assign G letter
-    physical_drive = "G:"
+    # mount drive with ftk imager
+    physical_drive = "\\\\.\\PhysicalDrive3"
 
     physical_disk_image = LiveImage(physical_drive)
     show_partitions(physical_disk_image)
