@@ -1,4 +1,4 @@
-from model.images import DiskImage, LiveImage
+from model.images import DiskImage, LiveImage, EWFImage
 
 import view
 
@@ -19,6 +19,18 @@ def show_file_attributes(disk_image, file_extraction):
 
 
 def start():
+
+    # Part 5 Auto escalating
+
+    '''
+    import admin,sys
+
+    if not admin.isUserAdmin():
+        admin.runAsAdmin()
+        sys.exit
+        
+    '''
+
     # file_path = "~/Documents/UCD/Work/AssignmentImage.dmg" #macOS
     file_path = "D:/Forensics/AssignmentImage.dmg"  # windowsOS
 
@@ -45,3 +57,25 @@ def start():
     show_partitions(physical_disk_image)
 
     # Part 4 Turn python program into a windows executable
+
+    #done check setup.py
+
+    # Part 5 (Check beginning)
+
+    # Part 6
+
+    import pyewf
+
+    file_path = "D:/Forensics/SSFCC-Level5.E01"  # windowsOS
+
+    disk_image = EWFImage(file_path)
+
+    show_partitions(disk_image)
+
+    filenames = pyewf.glob(file_path)
+
+    ewf_handle = pyewf.handle()
+
+    ewf_handle.open(filenames)
+
+    imagehandle = ewf_Img_Info(ewf_handle)
