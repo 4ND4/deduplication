@@ -3,8 +3,12 @@ import datetime
 
 def list_partition(list):
     header("Part 1 Access an Image")
-    for item in list:
-        print item
+
+    if list is not None:
+        for item in list:
+            print item
+    else:
+        print 'No items'
 
 
 def file_attributes(file):

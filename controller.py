@@ -1,5 +1,4 @@
-#from model import DiskImage
-from model.images import DiskImage
+from model.images import DiskImage, LiveImage
 
 import view
 
@@ -43,5 +42,5 @@ def start():
     #mount drive with ftk imager assign G letter
     physical_drive = "G:"
 
-    #physical_disk_image = DiskImage(physical_drive)
-    #show_partitions(physical_disk_image)
+    physical_disk_image = LiveImage(physical_drive)
+    show_partitions(physical_disk_image)
