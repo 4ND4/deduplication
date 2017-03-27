@@ -2,7 +2,7 @@ import datetime
 
 
 def list_partition(list):
-    header("Part 1 Access an Image")
+    header("Access an Image")
 
     if list is not None:
         for item in list:

@@ -43,3 +43,5 @@ def start():
 
     physical_disk_image = LiveImage(physical_drive)
     show_partitions(physical_disk_image)
+
+    # Part 4 Turn python program into a windows executable
