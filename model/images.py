@@ -1,4 +1,6 @@
 import os
+
+import psutil
 import pytsk3
 import pyewf
 
@@ -44,6 +46,20 @@ class Image:
                 raise AttributeError('check class')
 
             partition_table = pytsk3.Volume_Info(self.get_handle())
+
+            '''
+            partitionList = psutil.disk_partitions()
+            dirPath = "/"
+
+            for partition2 in partitionList:
+                imagehandle = pytsk3.Img_Info('\\\\.\\' + partition2.device.strip("\\"))
+                filesystemObject = pytsk3.FS_Info(imagehandle)
+
+                directoryObject = filesystemObject.open_dir(path=dirPath)
+                print "SAB"
+                print "Directory:", dirPath
+                
+            '''
 
             for partition in partition_table:
                 p = Partition(partition.addr, partition.desc, partition.start, partition.len)

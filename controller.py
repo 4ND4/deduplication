@@ -15,16 +15,17 @@ def show_file_attributes(disk_image, file_extraction):
 
     p = disk_image.get_partition(2)
 
-    f = p.extract_file(file_extraction)
+    if p is not None:
+        f = p.extract_file(file_extraction)
 
-    #f = disk_image.extract_file(2, file_extraction)
+        #f = disk_image.extract_file(2, file_extraction)
 
-    if f is not None:
-        f.write()
-        print f.get_md5hash()
-        print f.get_sha1hash()
+        if f is not None:
+            f.write()
+            print f.get_md5hash()
+            print f.get_sha1hash()
 
-    return view.file_attributes(f)
+        return view.file_attributes(f)
 
 
 def list_files(disk_image, address):
@@ -139,4 +140,15 @@ def start_args():
     # Recursively searching for files and extracting them from an image
 
     p = disk_image.get_partition(2)
-    p.search_files(".*jpg")
+
+    if p is not None:
+        p.search_files(".*jpg")
+
+    print 'Part 11'
+    # searching for files from a live system... improvements in code (test in live system)
+
+    print 'Part 12'
+    # accessing different volumes
+
+
+

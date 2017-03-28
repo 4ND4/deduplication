@@ -1,4 +1,5 @@
 import hashlib
+import os
 import re
 
 import pytsk3
@@ -134,23 +135,27 @@ def directoryRecurseSearch(directoryObject, parentPath, search):
     for entryObject in directoryObject:
         if entryObject.info.name.name in [".", ".."]:
             continue
-
+        #print entryObject.info.name.name
         try:
             f_type = entryObject.info.meta.type
-        except:
+            size = entryObject.info.meta.size
+        except Exception as error:
             print "Cannot retrieve type of", entryObject.info.name.name
+            print error.message
             continue
 
         try:
 
-            filePath = '/%s/%s' % ('/'.join(parentPath), entryObject.info.name.name)
+            file_path = '/%s/%s' % ('/'.join(parentPath), entryObject.info.name.name)
+            outputPath = './%s/' % ('/'.join(parentPath))
 
             if f_type == pytsk3.TSK_FS_META_TYPE_DIR:
                 sub_directory = entryObject.as_directory()
+                print "Entering Directory: %s" % file_path
                 parentPath.append(entryObject.info.name.name)
                 directoryRecurseSearch(sub_directory, parentPath, search)
                 parentPath.pop(-1)
-                print "Directory: %s" % filePath
+                print "Leaving Directory: %s" % file_path
 
             elif f_type == pytsk3.TSK_FS_META_TYPE_REG and entryObject.info.meta.size != 0:
 
@@ -158,7 +163,23 @@ def directoryRecurseSearch(directoryObject, parentPath, search):
                 if not searchResult:
                     continue
 
-                fileData = entryObject.read_random(0, entryObject.info.meta.size)
+                BUFF_SIZE = 1024 * 1024
+                offset = 0
+
+                if not os.path.exists(outputPath):
+                    os.makedirs(outputPath)
+                extractFile = open(outputPath + entryObject.info.name.name, 'w')
+                while offset < entryObject.info.meta.size:
+                    available_to_read = min(BUFF_SIZE, entryObject.info.meta.size - offset)
+                    fileData = entryObject.read_random(offset, available_to_read)
+                    #md5hash.update(filedata)
+                    #sha1hash.update(filedata)
+                    offset += len(fileData)
+
+                    extractFile.write(fileData)
+
+
+                #fileData = entryObject.read_random(0, entryObject.info.meta.size)
 
                 print "match ", entryObject.info.name.name
 
