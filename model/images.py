@@ -2,7 +2,6 @@ import os
 import pytsk3
 import pyewf
 
-from model.files import File
 from model.partitions import Partition
 
 
@@ -26,8 +25,11 @@ class Image:
             if isinstance(self, DiskImage):
                 with open(self.file_path) as imageFile:
                     image_handle = pytsk3.Img_Info(imageFile.name)
+                    self.set_handle(image_handle)
+
             elif isinstance(self, LiveImage):
                 image_handle = pytsk3.Img_Info(self.physical_drive)
+                self.set_handle(image_handle)
                 image_handle.close()
             elif isinstance(self, EWFImage):
 
@@ -36,14 +38,17 @@ class Image:
                 ewt_handle = pyewf.handle()
                 ewt_handle.open(file_names)
                 image_handle = ewf_Img_Info(ewt_handle)
+                self.set_handle(image_handle)
 
             else:
                 raise AttributeError('check class')
 
-            partition_table = pytsk3.Volume_Info(image_handle)
+            partition_table = pytsk3.Volume_Info(self.get_handle())
 
             for partition in partition_table:
-                partitions.append(Partition(partition.addr, partition.desc, partition.start, partition.len))
+                p = Partition(partition.addr, partition.desc, partition.start, partition.len)
+                p.set_handle(self.get_handle())
+                partitions.append(p)
 
             return partitions
 
@@ -52,40 +57,30 @@ class Image:
             print e.message
             return None
 
+    def set_handle(self, handle):
+        self.handle = handle
+
+    def get_handle(self):
+        return self.handle
+
     def set_partitions(self, partitions):
         self.partitions = partitions
 
     def get_offset_partition(self, address):
 
+        partition = self.get_partition(address)
+
+        if partition is not None:
+            return int(partition.get_offset())
+        return -1
+
+    def get_partition(self, address):
+
         if self.partitions is not None:
             for partition in self.partitions:
                 if partition.address == address:
-                    return int(partition.get_offset())
-        return -1
-
-    def extract_file(self, address, filename):
-        with open(self.file_path) as imageFile:
-            image_handle = pytsk3.Img_Info(imageFile.name)
-
-            ofs = self.get_offset_partition(address)
-
-            if ofs > 0:
-                file_system_object = pytsk3.FS_Info(image_handle, offset=ofs)
-                fileobject = file_system_object.open("/" + filename)
-
-                f = File(filename)
-                f.set_inode(fileobject.info.meta.addr)
-                f.set_name(fileobject.info.name.name)
-                f.set_file_creation(fileobject.info.meta.crtime)
-
-                file_data = fileobject.read_random(0, fileobject.info.meta.size)
-
-                f.set_file_data(file_data)
-
-                return f
-            else:
-                print 'error getting offset'
-                return None
+                    return partition
+        return None
 
 
 class DiskImage(Image):

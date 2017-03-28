@@ -12,11 +12,25 @@ def show_partitions(disk_image):
 
 
 def show_file_attributes(disk_image, file_extraction):
-    f = disk_image.extract_file(2, file_extraction)
-    f.write()
+
+    p = disk_image.get_partition(2)
+
+    f = p.extract_file(file_extraction)
+
+    #f = disk_image.extract_file(2, file_extraction)
+
+    if f is not None:
+        f.write()
+        print f.get_md5hash()
+        print f.get_sha1hash()
 
     return view.file_attributes(f)
 
+
+def list_files(disk_image, address):
+
+    p = disk_image.get_partition(address)
+    p.list_files()
 
 def start():
 
@@ -40,6 +54,7 @@ def start():
     # Part 1 Access an Image
     print 'Part 1'
     show_partitions(disk_image)
+    list_files(disk_image, 2)
 
     # Part 2 Extract a file from an image
     print 'Part 2'
@@ -70,6 +85,7 @@ def start():
     # Part 6
 
     print 'Part 6'
+    #Accessing an E01 image and extracting files
 
     #file_name = "D:/Forensics/image.E01"  # windowsOS
     file_name = "/media/felix/DATA/Forensics/image.E01" #linuxOS
@@ -81,9 +97,9 @@ def start():
 
 def start_args():
 
-    # Part 6
+    # Part 7
 
-    print 'Part 6'
+    print 'Part 7'
 
     import argparse
 
@@ -91,7 +107,7 @@ def start_args():
 
     argparser.add_argument(
         '-i', '--image',
-        dest='imagefile',
+        dest='image_file',
         action="store",
         type=str,
         default=None,
@@ -101,6 +117,26 @@ def start_args():
 
     args = argparser.parse_args()
 
-    file_name = args.imagefile
+    file_name = args.image_file
     disk_image = EWFImage(file_name)
     show_partitions(disk_image)
+
+    file_extraction = ".Trashes"
+    show_file_attributes(disk_image, file_extraction)
+
+    # Part 8
+
+    #Hashing a file stored in a forensic image
+
+    # Part 9
+
+    print 'Part 9'
+    # Recursively hashing all the files in an image
+
+    #list_files(disk_image)
+
+    print 'Part 10'
+    # Recursively searching for files and extracting them from an image
+
+    p = disk_image.get_partition(2)
+    p.search_files(".*jpg")

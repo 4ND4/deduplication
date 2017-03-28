@@ -11,12 +11,15 @@ def list_partition(list):
         print 'No items'
 
 
-def file_attributes(file):
-    header("Extract a file from an image")
-    print "File Inode:", file.get_inode()
-    print "File Name:", file.get_name()
-    print "File Creation Time:", datetime.datetime.fromtimestamp(file.get_file_creation()).strftime(
-        '%Y-%m-%d %H:%M:%S')
+def file_attributes(file_name):
+    if file_name is not None:
+        header("Extract a file from an image")
+        print "File Inode:", file_name.get_inode()
+        print "File Name:", file_name.get_name()
+        print "File Creation Time:", datetime.datetime.fromtimestamp(file_name.get_file_creation()).strftime(
+            '%Y-%m-%d %H:%M:%S')
+    else:
+        print 'File not found'
 
 
 def header(text):
