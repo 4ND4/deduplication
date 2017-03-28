@@ -64,18 +64,8 @@ def start():
 
     # Part 6
 
-    import pyewf
+    file_name = "D:/Forensics/image.E01"  # windowsOS
 
-    file_path = "D:/Forensics/SSFCC-Level5.E01"  # windowsOS
-
-    disk_image = EWFImage(file_path)
+    disk_image = EWFImage(file_name)
 
     show_partitions(disk_image)
-
-    filenames = pyewf.glob(file_path)
-
-    ewf_handle = pyewf.handle()
-
-    ewf_handle.open(filenames)
-
-    imagehandle = ewf_Img_Info(ewf_handle)

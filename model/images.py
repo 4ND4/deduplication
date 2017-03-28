@@ -15,6 +15,7 @@ class Image:
         self.type = None
         self.os = None
         self.url = None
+        self.handle = None
 
     def get_partitions(self):
 
@@ -22,13 +23,22 @@ class Image:
 
         try:
 
-            if isinstance(self,DiskImage):
+            if isinstance(self, DiskImage):
                 with open(self.file_path) as imageFile:
                     image_handle = pytsk3.Img_Info(imageFile.name)
-            elif isinstance(self,LiveImage):
+            elif isinstance(self, LiveImage):
                 image_handle = pytsk3.Img_Info(self.physical_drive)
-            elif isinstance(self,EWFImage):
-                image_handle = pytsk3.Img_Info(self.ewf_handle)
+                image_handle.close()
+            elif isinstance(self, EWFImage):
+
+                with open(self.get_file_name(),"rb") as file_object:
+                    ewf_handle = pyewf.handle()
+                    ewf_handle.open_file_objects([file_object])
+                    image_handle = ewf_Img_Info(ewf_handle)
+                    ewf_handle.close()
+
+                    print 'yal'
+
             else:
                 raise AttributeError('check class')
 
@@ -40,8 +50,8 @@ class Image:
             return partitions
 
         except IOError as e:
-            print e.errno
-            print e
+            print 'fail'
+            print e.message
             return None
 
     def set_partitions(self, partitions):
@@ -81,9 +91,7 @@ class Image:
 
 
 class DiskImage(Image):
-
     def __init__(self, file_path):
-
         Image.__init__(self)
         self.file_path = os.path.expanduser(file_path)
 
@@ -94,20 +102,28 @@ class LiveImage(Image):
         self.physical_drive = physical_drive
 
 
-class EWFImage(Image):
+class ewf_Img_Info(pytsk3.Img_Info):
     def __init__(self, ewf_handle):
-        Image.__init__(self)
-        self.ewf_handle = ewf_handle
-        super(EWFImage, self).__init__\
-                (
+        self._ewf_handle = ewf_handle
+        super(ewf_Img_Info, self).__init__(
             url="", type=pytsk3.TSK_IMG_TYPE_EXTERNAL)
 
-        def close(self):
-            self._ewf_handle.close()
+    def close(self):
+        self._ewf_handle.close()
 
-        def read(self, offset, size):
-            self._ewf_handle.seek(offset)
-            return self._ewf_handle.read(size)
+    def read(self, offset, size):
+        self._ewf_handle.seek(offset)
+        return self._ewf_handle.read(size)
 
-        def get_size(self):
-            return self._ewf_handle.get_media_size()
+    def get_size(self):
+        return self._ewf_handle.get_media_size()
+
+
+class EWFImage(Image):
+
+    def __init__(self, file_name):
+        Image.__init__(self)
+        self.file_name = os.path.expanduser(file_name)
+
+    def get_file_name(self):
+        return self.file_name
