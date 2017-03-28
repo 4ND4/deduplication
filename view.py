@@ -12,7 +12,7 @@ def list_partition(list):
 
 
 def file_attributes(file):
-    header("Part 2 Extract a file from an image")
+    header("Extract a file from an image")
     print "File Inode:", file.get_inode()
     print "File Name:", file.get_name()
     print "File Creation Time:", datetime.datetime.fromtimestamp(file.get_file_creation()).strftime(

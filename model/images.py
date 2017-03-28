@@ -31,13 +31,11 @@ class Image:
                 image_handle.close()
             elif isinstance(self, EWFImage):
 
-                with open(self.get_file_name(),"rb") as file_object:
-                    ewf_handle = pyewf.handle()
-                    ewf_handle.open_file_objects([file_object])
-                    image_handle = ewf_Img_Info(ewf_handle)
-                    ewf_handle.close()
+                file_names = pyewf.glob(self.get_file_name())
 
-                    print 'yal'
+                ewt_handle = pyewf.handle()
+                ewt_handle.open(file_names)
+                image_handle = ewf_Img_Info(ewt_handle)
 
             else:
                 raise AttributeError('check class')
