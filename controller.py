@@ -141,14 +141,33 @@ def start_args():
 
     p = disk_image.get_partition(2)
 
+    '''
     if p is not None:
         p.search_files(".*jpg")
+    '''
 
     print 'Part 11'
     # searching for files from a live system... improvements in code (test in live system)
 
     print 'Part 12'
     # accessing different volumes
+
+    #file_name = "~/Downloads/dfr-01-fat.dd"
+    #file_name = "~/Downloads/dfr-01-ntfs.dd"
+    #file_name = "~/Downloads/dfr-01-osx.dd"
+    file_name = "~/Downloads/dfr-01-ext.dd"
+
+    disk_image =DiskImage(file_name)
+    show_partitions(disk_image)
+
+    print 'Part 13'
+
+    file_name = "/media/felix/DATA/Download/zip/image.dd"
+
+    disk_image = DiskImage(file_name)
+    show_partitions(disk_image)
+    list_files(disk_image, 1)
+
 
 
 

@@ -3,7 +3,9 @@ import os
 import psutil
 import pytsk3
 import pyewf
+import pyvshadow
 
+from model import vss
 from model.partitions import Partition
 
 
@@ -24,28 +26,33 @@ class Image:
 
         try:
 
+            file_name = ''
+
             if isinstance(self, DiskImage):
-                with open(self.file_path) as imageFile:
+                file_name = self.file_path
+                with open(file_name) as imageFile:
                     image_handle = pytsk3.Img_Info(imageFile.name)
                     self.set_handle(image_handle)
 
             elif isinstance(self, LiveImage):
-                image_handle = pytsk3.Img_Info(self.physical_drive)
+                file_name = self.physical_drive
+                image_handle = pytsk3.Img_Info(file_name)
                 self.set_handle(image_handle)
                 image_handle.close()
             elif isinstance(self, EWFImage):
 
-                file_names = pyewf.glob(self.get_file_name())
+                file_name = self.get_file_name()
+                file_names = pyewf.glob(file_name)
 
                 ewt_handle = pyewf.handle()
                 ewt_handle.open(file_names)
                 image_handle = ewf_Img_Info(ewt_handle)
                 self.set_handle(image_handle)
-
             else:
                 raise AttributeError('check class')
 
             partition_table = pytsk3.Volume_Info(self.get_handle())
+
 
             '''
             partitionList = psutil.disk_partitions()
@@ -62,8 +69,10 @@ class Image:
             '''
 
             for partition in partition_table:
-                p = Partition(partition.addr, partition.desc, partition.start, partition.len)
-                p.set_handle(self.get_handle())
+
+                p = Partition(partition.addr, partition.desc, partition.start, partition.len, self.get_handle())
+                p.set_image_file(file_name)
+
                 partitions.append(p)
 
             return partitions
@@ -136,3 +145,13 @@ class EWFImage(Image):
 
     def get_file_name(self):
         return self.file_name
+
+
+class VolumeShadow(Image):
+
+    def __init__(self, image_file):
+        Image.__init__(self)
+        self.image_file = os.path.expanduser(image_file)
+
+    def get_image_file(self):
+        return self.image_file

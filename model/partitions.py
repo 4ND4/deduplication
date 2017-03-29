@@ -3,15 +3,27 @@ import os
 import re
 
 import pytsk3
+import pyvshadow
 
+import vss
 
 class Partition:
-    def __init__(self, address, description, start, length):
+    def __init__(self, address, description, start, length, handle):
         self.address = address
         self.description = description
         self.start = start
         self.length = length
-        self.handle = None
+        self.handle = handle
+        self.type = None
+        self.image_file = None
+
+        self.set_type()
+
+    def get_image_file(self):
+        return self.image_file
+
+    def set_image_file(self, image_file):
+        self.image_file = image_file
 
     def get_address(self):
         return self.address
@@ -40,6 +52,17 @@ class Partition:
                str(self.get_start()) + "s (" + \
                str(self.get_offset()) + ") " + \
                str(self.get_length())
+
+    def set_type(self):
+
+        try:
+            file_system_object = pytsk3.FS_Info(self.get_handle(), offset=self.get_offset())
+            self.type = file_system_object.info.ftype
+        except:
+            print 'Warning ! Partition(' + str(self.get_address()) + ')' + self.get_description() + ' has no supported file system'
+
+    def get_type(self):
+        return self.type
 
     def extract_file(self, filename):
 
@@ -77,10 +100,45 @@ class Partition:
 
         dir_path = "/"
 
-        file_system_object = pytsk3.FS_Info(self.get_handle(), offset=self.get_offset())
-        directory_object = file_system_object.open_dir(path=dir_path)
+        #check if it's NTFS
 
-        directoryRecurse(directory_object, [])
+        if self.get_type() is not None:
+
+            file_system_object = pytsk3.FS_Info(self.get_handle(), offset=self.get_offset())
+
+            if (str(self.get_type()) == "TSK_FS_TYPE_NTFS_DETECT"):
+                print "NTFS DETECTED"
+
+                volume = pyvshadow.volume()
+
+                fh = vss.VShadowVolume(self.get_image_file(), self.get_offset())
+                count = vss.GetVssStoreCount(self.get_image_file(), self.get_offset())
+                if (count):
+                    vstore = 0
+                    volume.open_file_object(fh)
+                    while (vstore < count):
+                        store = volume.get_store(vstore)
+                        img = vss.VShadowImgInfo(store)
+                        vssfilesystemObject = pytsk3.FS_Info(img)
+                        vssdirectoryObject = vssfilesystemObject.open_dir(path=dir_path)
+                        print "Directory:", "vss", str(vstore), dir_path
+                        directoryRecurse(vssdirectoryObject, ['vss', str(vstore)])
+                        vstore = vstore + 1
+                    # Capture the live volume
+                    directory_object = file_system_object.open_dir(path=dir_path)
+                    print "Directory:", dir_path
+
+                    directoryRecurse(directory_object, [])
+
+            else:
+
+                directory_object = file_system_object.open_dir(path=dir_path)
+                print "Directory:", dir_path
+                directoryRecurse(directory_object, [])
+
+        else:
+            print 'No supported file system'
+
 
     def search_files(self, search_query):
 
